@@ -11,6 +11,8 @@ services:
       interval: 3s
       timeout: 1s
       retries: 1
+    volumes:
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   walk-profile:
     build:

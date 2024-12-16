@@ -1,4 +1,5 @@
 import uuid
+from typing import Protocol
 
 import jwt
 from fastapi import APIRouter, Depends
@@ -24,3 +25,7 @@ def get_current_user_id(token: str = Depends(api_key_header)) -> uuid.UUID:
         return user_id
     except jwt.PyJWTError:
         raise InvalidTokenException
+
+
+class ChatServiceInterface(Protocol):
+    pass

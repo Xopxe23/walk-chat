@@ -37,5 +37,5 @@ docker-compose up --build
 ## Для запуска тестов внутри docker контейнера:
 
 ```
-docker exec -it walk-profile-app pytest
+docker exec -it walk-chat-app pytest
 ```

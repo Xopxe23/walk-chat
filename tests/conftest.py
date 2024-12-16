@@ -36,6 +36,7 @@ async def prepare_database():
 @pytest.fixture(scope="session")
 def event_loop(request):
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     yield loop
     loop.close()
 
@@ -43,24 +44,4 @@ def event_loop(request):
 @pytest.fixture(scope="function")
 async def async_client():
     async with AsyncClient(transport=ASGITransport(app=fastapi_app), base_url="http://test") as async_client:
-        yield async_client
-
-
-@pytest.fixture(scope="function")
-async def authenticated_async_client():
-    async with AsyncClient(transport=ASGITransport(app=fastapi_app), base_url="http://test") as async_client:
-        response = await async_client.post("/auth/token", json={
-            "id": 123456789,
-            "first_name": "Alice",
-            "last_name": "Smith",
-            "username": "alice_smith",
-            "photo_url": "https://t.me/i/userpic/320/alice_smith.jpg",
-            "auth_date": 1700000000,
-            "hash": "8148c1689fdc140a4a7b6c2182718f49d80b69588986c9412d37bcef5e974c5a"
-        })
-        token = response.json().get("access_token")
-        async_client.headers = {
-            **async_client.headers,
-            "Authorization": token,
-        }
         yield async_client
