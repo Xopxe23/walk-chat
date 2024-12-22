@@ -3,6 +3,7 @@ import sys
 
 import uvicorn
 from fastapi import FastAPI
+
 from app.chats.router import router as chat_router
 
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
