@@ -11,14 +11,14 @@ class PostgresConfig(BaseConfig):
 
     @property
     def DB_URL(self) -> str:
-        if self.MODE == "PROD":
+        if self.DOCKER:
             self.POSTGRES_HOST = "db"
         return (f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
                 f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}")
 
     @property
     def TEST_DB_URL(self):
-        if self.MODE == "PROD":
+        if self.DOCKER:
             self.POSTGRES_HOST = "db"
         return (f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
                 f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.TEST_POSTGRES_DB}")

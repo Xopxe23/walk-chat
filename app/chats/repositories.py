@@ -2,9 +2,10 @@ import uuid
 from typing import AsyncGenerator, Optional
 
 from fastapi import Depends
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.chats.filters import BaseFilter
 from app.chats.models import ChatMessage, ChatRoom
 from app.chats.schemas import ChatCreateSchema, ChatRoomOutSchema, ChatRoomSchema, MessageCreateSchema, MessageSchema
 from app.database import get_async_session
@@ -51,6 +52,21 @@ class ChatRepository:
         await self.session.commit()
         await self.session.refresh(message)
         return MessageSchema.model_validate(message)
+
+    async def get_chat_messages(self, chat_id: uuid.UUID, filters: BaseFilter) -> list[MessageSchema]:
+        query = (
+            select(
+                self.message_table,
+                func.count(self.message_table.message_id).over().label("total_count")
+            )
+            .where(self.message_table.chat_id == chat_id)
+            .order_by(self.message_table.created_at.desc())
+            .offset(filters.offset)
+            .limit(filters.limit)
+        )
+        result = await self.session.execute(query)
+        messages = [MessageSchema.model_validate(message) for message in result.scalars()]
+        return messages
 
 
 def get_chat_repository(session: AsyncSession = Depends(get_async_session)) -> AsyncGenerator[ChatRepository, None]:

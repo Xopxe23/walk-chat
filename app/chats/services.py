@@ -3,8 +3,9 @@ from typing import AsyncGenerator, Optional, Protocol
 
 from fastapi import Depends
 
+from app.chats.filters import BaseFilter
 from app.chats.repositories import get_chat_repository
-from app.chats.schemas import ChatCreateSchema, ChatRoomOutSchema, ChatRoomSchema
+from app.chats.schemas import ChatCreateSchema, ChatRoomSchema, MessageSchema
 
 
 class ChatRepositoryInterface(Protocol):
@@ -15,6 +16,9 @@ class ChatRepositoryInterface(Protocol):
         ...
 
     async def create_chat(self, chat_data: ChatCreateSchema) -> ChatRoomSchema:
+        ...
+
+    async def get_chat_messages(self, chat_id: uuid.UUID, filters: BaseFilter) -> list[MessageSchema]:
         ...
 
 
@@ -36,6 +40,10 @@ class ChatService:
     async def create_chat(self, chat_data: ChatCreateSchema) -> ChatRoomSchema:
         chat = await self.chat_repository.create_chat(chat_data)
         return chat
+
+    async def get_chat_messages(self, chat_id: uuid.UUID, filters: BaseFilter) -> list[MessageSchema]:
+        messages = await self.chat_repository.get_chat_messages(chat_id, filters)
+        return messages
 
 
 def get_chat_service(

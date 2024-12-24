@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class BaseConfig(BaseSettings):
-    MODE: str
+    DOCKER: bool
 
     class Config:
         env_file = ".env"
