@@ -11,3 +11,8 @@ class ChatAccessForbiddenException(CustomHTTPException):
 
 class ChatNotFoundException(NotFoundException):
     DETAIL = "Chat not found"
+
+
+class ChatExistsException(CustomHTTPException):
+    STATUS_CODE = status.HTTP_409_CONFLICT
+    DETAIL = "Chat already exists"

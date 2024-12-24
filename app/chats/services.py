@@ -9,7 +9,7 @@ from app.chats.schemas import ChatCreateSchema, ChatRoomSchema, MessageSchema
 
 
 class ChatRepositoryInterface(Protocol):
-    async def get_my_chats(self, user_id: uuid.UUID) -> list[ChatRoomSchema]:
+    async def get_my_chats(self, user_id: uuid.UUID, filters: BaseFilter) -> list[ChatRoomSchema]:
         ...
 
     async def get_chat_by_id(self, chat_id: uuid.UUID) -> Optional[ChatRoomSchema]:
@@ -29,8 +29,8 @@ class ChatService:
     ):
         self.chat_repository = chat_repository
 
-    async def get_my_chats(self, user_id: uuid.UUID) -> list[ChatRoomSchema]:
-        chats = await self.chat_repository.get_my_chats(user_id)
+    async def get_my_chats(self, user_id: uuid.UUID, filters: BaseFilter) -> list[ChatRoomSchema]:
+        chats = await self.chat_repository.get_my_chats(user_id, filters)
         return chats
 
     async def get_chat_by_id(self, chat_id: uuid.UUID) -> ChatRoomSchema:

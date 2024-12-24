@@ -2,13 +2,15 @@ import uuid
 from typing import AsyncGenerator, Optional
 
 from fastapi import Depends
-from sqlalchemy import or_, select, func
+from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.chats.filters import BaseFilter
 from app.chats.models import ChatMessage, ChatRoom
-from app.chats.schemas import ChatCreateSchema, ChatRoomOutSchema, ChatRoomSchema, MessageCreateSchema, MessageSchema
+from app.chats.schemas import ChatCreateSchema, ChatRoomSchema, MessageCreateSchema, MessageSchema
 from app.database import get_async_session
+from app.exceptions.chat import ChatExistsException
 
 
 class ChatRepository:
@@ -20,11 +22,13 @@ class ChatRepository:
         self.chat_table = ChatRoom
         self.message_table = ChatMessage
 
-    async def get_my_chats(self, user_id: uuid.UUID) -> list[ChatRoomSchema]:
-        query = select(self.chat_table).where(or_(
-            self.chat_table.user1_id == user_id,
-            self.chat_table.user2_id == user_id,
-        ))
+    async def get_my_chats(self, user_id: uuid.UUID, filters: BaseFilter) -> list[ChatRoomSchema]:
+        query = (
+            select(self.chat_table)
+            .where(or_(self.chat_table.user1_id == user_id, self.chat_table.user2_id == user_id))
+            .offset(filters.offset)
+            .limit(filters.limit)
+        )
         chats_data = await self.session.execute(query)
         chats = [ChatRoomSchema.model_validate(chat) for chat in chats_data.scalars()]
         return chats
@@ -39,8 +43,11 @@ class ChatRepository:
         chat = self.chat_table(
             **chat_data.dict()
         )
-        self.session.add(chat)
-        await self.session.commit()
+        try:
+            self.session.add(chat)
+            await self.session.commit()
+        except IntegrityError:
+            raise ChatExistsException
         await self.session.refresh(chat)
         return ChatRoomSchema.model_validate(chat)
 
@@ -55,10 +62,7 @@ class ChatRepository:
 
     async def get_chat_messages(self, chat_id: uuid.UUID, filters: BaseFilter) -> list[MessageSchema]:
         query = (
-            select(
-                self.message_table,
-                func.count(self.message_table.message_id).over().label("total_count")
-            )
+            select(self.message_table)
             .where(self.message_table.chat_id == chat_id)
             .order_by(self.message_table.created_at.desc())
             .offset(filters.offset)
