@@ -1,6 +1,16 @@
-from fastapi import status
+from typing import Any
 
-from app.utils import CustomHTTPException
+from fastapi import HTTPException, status
+
+
+class CustomHTTPException(HTTPException):
+    """Кастомный exception для наследования"""
+
+    STATUS_CODE = status.HTTP_500_INTERNAL_SERVER_ERROR
+    DETAIL = "Server error"
+
+    def __init__(self, **kwargs: dict[str, Any]) -> None:
+        super().__init__(status_code=self.STATUS_CODE, detail=self.DETAIL, **kwargs)
 
 
 class NotFoundException(CustomHTTPException):

@@ -1,6 +1,6 @@
 import pytest
-from httpx import AsyncClient
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from starlette.websockets import WebSocketDisconnect
 
 

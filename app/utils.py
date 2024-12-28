@@ -1,17 +1,21 @@
 import uuid
-from typing import Annotated, Any
 
-from fastapi import HTTPException, status
-from sqlalchemy.orm import mapped_column
+import jwt
+from fastapi import Depends
+from fastapi.security import APIKeyHeader
 
-uuid_pk = Annotated[uuid.UUID, mapped_column(primary_key=True, default=uuid.uuid4)]  # UUID для Base models
+from app.configs.main import settings
+from app.exceptions.auth import InvalidTokenException
+
+api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 
 
-class CustomHTTPException(HTTPException):
-    """Кастомный exception для наследования"""
-
-    STATUS_CODE = status.HTTP_500_INTERNAL_SERVER_ERROR
-    DETAIL = "Server error"
-
-    def __init__(self, **kwargs: dict[str, Any]) -> None:
-        super().__init__(status_code=self.STATUS_CODE, detail=self.DETAIL, **kwargs)
+def get_current_user_id(token: str = Depends(api_key_header)) -> uuid.UUID:
+    try:
+        payload = jwt.decode(token, settings.secret.JWT_SECRET, algorithms=[settings.secret.ALGORITHM])
+        user_id: uuid.UUID = payload.get("sub")
+        if user_id is None:
+            raise InvalidTokenException
+        return user_id
+    except jwt.PyJWTError:
+        raise InvalidTokenException

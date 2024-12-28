@@ -1,6 +1,6 @@
 from fastapi import status
 
-from app.utils import CustomHTTPException
+from app.exceptions.common import CustomHTTPException
 
 
 class InvalidTokenException(CustomHTTPException):

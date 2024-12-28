@@ -1,7 +1,6 @@
 from fastapi import status
 
-from app.exceptions.common import NotFoundException
-from app.utils import CustomHTTPException
+from app.exceptions.common import CustomHTTPException, NotFoundException
 
 
 class ChatAccessForbiddenException(CustomHTTPException):

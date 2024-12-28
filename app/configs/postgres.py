@@ -1,4 +1,4 @@
-from app.config.base import BaseConfig
+from app.configs.base import BaseConfig
 
 
 class PostgresConfig(BaseConfig):

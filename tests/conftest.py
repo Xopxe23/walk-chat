@@ -2,53 +2,26 @@ import asyncio
 import json
 import os
 import sys
-import uuid
-
-from fastapi import HTTPException, status, Depends
-from typing import AsyncGenerator
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy import NullPool, insert
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from fastapi.testclient import TestClient
 
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from app.chats.models import ChatRoom
-from app.chats.filters import BaseFilter
-from app.chats.router import get_current_user_id, api_key_header
-from app.config.main import settings
-from app.database import Base, get_async_session
+
+from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import insert
+
+from app.database import Base
 from app.main import app as fastapi_app
+from app.models.chats import Chats
+from app.services.chats import get_chats_service
+from app.utils import get_current_user_id
+from tests.dependencies.database import async_session_maker, engine
+from tests.dependencies.services import get_test_chats_service
+from tests.dependencies.users import mock_get_current_user_id
 
-DB_URL = settings.postgres.TEST_DB_URL
-engine = create_async_engine(DB_URL, poolclass=NullPool)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-
-
-async def override_get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        yield session
-
-
-async def mock_get_current_user_id(token: str = Depends(api_key_header)) -> uuid.UUID:
-    if token:
-        user_id = "9c92aabb-3771-4756-97cc-b781371ff19a"
-        return uuid.UUID(user_id)
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid token",
-    )
-
-
-class FakeFilter:
-    limit: int = 10
-    offset: int = 0
-
-
-fastapi_app.dependency_overrides[get_async_session] = override_get_async_session
+fastapi_app.dependency_overrides[get_chats_service] = get_test_chats_service
 fastapi_app.dependency_overrides[get_current_user_id] = mock_get_current_user_id
-fastapi_app.dependency_overrides[BaseFilter] = lambda: FakeFilter()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -63,7 +36,7 @@ async def prepare_database():
 
     chats = open_mock_json("chats")
     async with async_session_maker() as session:
-        add_chats = insert(ChatRoom).values(chats)
+        add_chats = insert(Chats).values(chats)
         await session.execute(add_chats)
         await session.commit()
 

@@ -3,9 +3,10 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.chats.models import ChatMessage, ChatRoom
-from app.config.main import settings
+from app.configs.main import settings
 from app.database import Base
+from app.models.chats import Chats
+from app.models.messages import Messages
 
 config = context.config
 config.set_main_option("sqlalchemy.url", f"{settings.postgres.DB_URL}?async_fallback=True")
@@ -15,9 +16,9 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-# other values from the config, defined by the needs of env.py,
+# other values from the configs, defined by the needs of env.py,
 # can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
+# my_important_option = configs.get_main_option("my_important_option")
 # ... etc.
 
 
