@@ -1,8 +1,8 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 
 def get_mocked_kafka_consumer():
-    mock_producer = MagicMock()
+    mock_producer = AsyncMock()
     mock_producer.start = MagicMock()
     mock_producer.stop = MagicMock()
     mock_producer.subscribe = MagicMock()
@@ -12,9 +12,9 @@ def get_mocked_kafka_consumer():
 
 
 def get_mocked_kafka_producer():
-    mock_producer = MagicMock()
+    mock_producer = AsyncMock()
     mock_producer.start = MagicMock()
     mock_producer.stop = MagicMock()
     mock_producer.send = MagicMock()
-    mock_producer.send_message = MagicMock()
+    mock_producer.send_message = AsyncMock()
     return mock_producer

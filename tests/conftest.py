@@ -5,12 +5,15 @@ import sys
 
 import pytest
 
+
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import insert
 
+from app.managers.connections import get_ws_manager
+from tests.dependencies.connections import get_test_ws_manager
 from app.database import Base
 from app.main import app as fastapi_app
 from app.models.chats import Chats
@@ -21,6 +24,7 @@ from tests.dependencies.services import get_test_chats_service
 from tests.dependencies.users import mock_get_current_user_id
 
 fastapi_app.dependency_overrides[get_chats_service] = get_test_chats_service
+fastapi_app.dependency_overrides[get_ws_manager] = get_test_ws_manager
 fastapi_app.dependency_overrides[get_current_user_id] = mock_get_current_user_id
 
 

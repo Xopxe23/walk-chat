@@ -36,8 +36,7 @@ async def create_chat(
         ws_manager: ConnectionsManagerInterface = Depends(get_ws_manager),
 ) -> ChatSchema:
     chat = await chats_service.create_chat(chat_create_data)
-    users = (str(chat.user1_id), str(chat.user2_id))
-    await ws_manager.send_chat(users, chat)
+    await ws_manager.send_chat(chat)
     return chat
 
 

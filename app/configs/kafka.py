@@ -7,4 +7,6 @@ class KafkaConfig(BaseConfig):
 
     @property
     def KAFKA_URL(self):
+        if self.DOCKER:
+            self.KAFKA_HOST = "kafka"
         return f"{self.KAFKA_HOST}:{self.KAFKA_PORT}"

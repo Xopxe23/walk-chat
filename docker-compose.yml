@@ -1,5 +1,5 @@
 services:
-  db:
+  chat-db:
     image: postgres:15
     container_name: walk-chat-db
     env_file:
