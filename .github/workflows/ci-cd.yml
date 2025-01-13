@@ -1,0 +1,32 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up environment variables from GitHub secrets
+        run: |
+          echo "DOCKER=${{ secrets.DOCKER }}" >> .env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "TEST_POSTGRES_DB=${{ secrets.TEST_POSTGRES_DB }}" >> .env
+          echo "KAFKA_HOST=${{ secrets.KAFKA_HOST }}" >> .env
+          echo "KAFKA_PORT=${{ secrets.KAFKA_PORT }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "ALGORITHM=${{ secrets.ALGORITHM }}" >> .env
+
+      - name: Build the project
+        run: |
+            docker-compose down
+            docker-compose up --build -d

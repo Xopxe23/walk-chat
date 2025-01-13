@@ -2,6 +2,8 @@ services:
   chat-db:
     image: postgres:15
     container_name: walk-chat-db
+    networks:
+      - walk-network
     env_file:
       - .env
     healthcheck:
@@ -16,11 +18,17 @@ services:
     build:
       context: .
     container_name: walk-chat-app
+    networks:
+      - walk-network
     depends_on:
-      db:
+      chat-db:
         condition: service_healthy
     env_file:
       - .env
     command: ["/walk-chat/docker/app.sh"]
     ports:
-      - 8002:8000
+      - 8002:8002
+
+networks:
+  walk-network:
+    external: true
